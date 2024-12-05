@@ -126,6 +126,19 @@ p a:hover {
     text-decoration: underline;
 }
 
+/* Add this to your styles.css */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+}
+
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     header .navbar ul {
@@ -137,3 +150,5 @@ p a:hover {
         width: 90%;
     }
 }
+
+
