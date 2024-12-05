@@ -9,8 +9,8 @@ USE shelfie_spot;
 #CREATE TABLE IF NOT EXISTS books (id INT AUTO_INCREMENT,name VARCHAR(50),price DECIMAL(5, 2) unsigned,PRIMARY KEY(id));
 
 # Create the app user
-CREATE USER IF NOT EXISTS 'shelfie_spot_app'@'localhost' IDENTIFIED BY 'kjuertyultyp'; 
-GRANT ALL PRIVILEGES ON shelfie_spot.* TO ' shelfie_spot_app'@'localhost';
+/*CREATE USER IF NOT EXISTS 'shelfie_spot_app'@'localhost' IDENTIFIED BY 'kjuertyultyp'; 
+GRANT ALL PRIVILEGES ON shelfie_spot.* TO ' shelfie_spot_app'@'localhost'; */
 
 
 
