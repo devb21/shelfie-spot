@@ -2,10 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const bcrypt = require('bcrypt');
+const session = require('express-session');
 require('dotenv').config();
-
-const db = require('./db');
+const authRouter = require('./routes/auth'); // Import the auth router
+const db = require('./db'); // Ensure this file correctly initializes your database connection
 
 const app = express();
 
@@ -14,6 +14,14 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Initialize session middleware
+app.use(session({
+    secret: 'your_secret_key', // Replace with a secure key
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS
+}));
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -21,9 +29,15 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// Use auth routes for authentication (includes login and register)
+app.use('/', authRouter);
+
 // Homepage Route
 app.get('/', (req, res) => {
-    res.render('index', { title: 'Shelfie Spot - Home' });
+    res.render('index', { 
+        title: 'Home - Shelfie Spot',
+        user: req.session.user // Pass session user data to the template
+    });
 });
 
 // Redirect 'Account' to the Register Page
@@ -33,107 +47,32 @@ app.get('/account', (req, res) => {
 
 // Render Registration Page
 app.get('/register', (req, res) => {
-    res.render('register', { title: 'Register - Shelfie Spot', message: null });
-});
-
-// Handle Registration Form Submission
-app.post('/register', async (req, res) => {
-    const { username, firstname, lastname, email, password } = req.body;
-
-    // Validate input
-    if (!username || !firstname || !lastname || !email || !password) {
-        return res.render('register', { 
-            title: 'Register - Shelfie Spot', 
-            message: 'All fields are required!' 
-        });
-    }
-
-    try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insert into MySQL
-        const query = `INSERT INTO users (username, firstname, lastname, email, password) VALUES (?, ?, ?, ?, ?)`;
-        const values = [username, firstname, lastname, email, hashedPassword];
-
-        db.query(query, values, (err) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.render('register', { 
-                        title: 'Register - Shelfie Spot', 
-                        message: 'Username or email already exists!' 
-                    });
-                }
-                return res.render('register', { 
-                    title: 'Register - Shelfie Spot', 
-                    message: 'Database error occurred!' 
-                });
-            }
-            res.render('register', { 
-                title: 'Register - Shelfie Spot', 
-                message: 'User registered successfully!' 
-            });
-        });
-    } catch (error) {
-        console.error(error);
-        res.render('register', { 
-            title: 'Register - Shelfie Spot', 
-            message: 'An error occurred during registration.' 
-        });
-    }
-});
-
-// Render Login Page
-app.get('/login', (req, res) => {
-    res.render('login', { title: 'Login - Shelfie Spot', message: null });
-});
-
-// Handle Login Form Submission
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-
-    // Validate input
-    if (!username || !password) {
-        return res.render('login', { 
-            title: 'Login - Shelfie Spot', 
-            message: 'Please provide both username and password.' 
-        });
-    }
-
-    const query = `SELECT * FROM users WHERE username = ?`;
-    db.query(query, [username], async (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.render('login', { 
-                title: 'Login - Shelfie Spot', 
-                message: 'Database error occurred!' 
-            });
-        }
-
-        if (results.length === 0) {
-            return res.render('login', { 
-                title: 'Login - Shelfie Spot', 
-                message: 'Invalid username or password.' 
-            });
-        }
-
-        const user = results[0];
-
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.render('login', { 
-                title: 'Login - Shelfie Spot', 
-                message: 'Invalid username or password.' 
-            });
-        }
-
-        res.render('login', { 
-            title: 'Login - Shelfie Spot', 
-            message: 'Login successful!' 
-        });
+    res.render('register', { 
+        title: 'Register - Shelfie Spot', 
+        message: null, 
+        username: '', 
+        firstname: '', 
+        lastname: '', 
+        email: '' 
     });
 });
+
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.redirect('/');
+        }
+        res.redirect('/'); // Redirect to home page after logging out
+    });
+});
+
+
+// Use auth routes for registration and login
+app.use('/auth', authRouter);
+
+
+
 
 // Start Server
 const PORT = 8000;

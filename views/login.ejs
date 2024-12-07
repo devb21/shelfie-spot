@@ -28,20 +28,33 @@
                 <h2>Login to Shelfie Spot</h2>
             </header>
             <% if (message) { %>
-                <p class="message"><%= message %></p>
+                <!-- Render error messages -->
+                <div class="alert alert-danger">
+                    <p class="message"><%- message %></p> 
+                </div>
             <% } %>
-            <form action="/login" method="POST">
+            <form method="POST" action="/login">
                 <div class="form-group">
                     <label for="username">Username:</label>
-                    <input type="text" id="username" name="username">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        value="<%= username %>" 
+                        placeholder="Enter your username">
                 </div>
                 <div class="form-group">
                     <label for="password">Password:</label>
-                    <input type="password" id="password" name="password">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Enter your password">
                 </div>
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="/register">Register here</a>.</p>
+            
+            <p class="have-account-link">Don't have an account? <a href="/register">Register here</a>.</p>
         </div>
     </main>
 
@@ -49,7 +62,5 @@
     <footer>
         <p>&copy; 2024 Shelfie Spot. All rights reserved.</p>
     </footer>
-
-
 </body>
 </html>
